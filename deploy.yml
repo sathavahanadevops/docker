@@ -1,0 +1,20 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+   name: sathavahana
+spec:
+   replicas: 3
+   selector: 
+    matchLabels:
+     app: sathavahana
+   template:
+      metadata:
+        labels:
+          app: sathavahana
+      spec:
+       containers:
+        - name: sathavahana
+          image: sathadocker/webserver
+          imagePullPolicy: Always
+          ports:
+          - containerPort: 80
