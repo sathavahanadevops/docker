@@ -1,7 +1,9 @@
 - hosts: all
   become: true
   tasks:
-     - name: create new deployment
-       command: kubectl apply -f /home/ubuntu/deploy.yml
-     - name: create new service
-       command: kubectl apply -f /home/ubuntu/service.yml
+     - name: delete deployment
+       command: kubectl delete -f /home/ubuntu/deploy.yml
+     - name: delete service
+       command: kubectl delete -f /home/ubuntu/service.yml
+     - name: delete k8 cluster
+       shell: /home/ubuntu/./k8delete.sh
