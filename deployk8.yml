@@ -1,0 +1,5 @@
+- hosts: all
+  become: true
+  tasks:
+       - name: perform apt update
+         shell: /home/ubuntu/./k8.sh
