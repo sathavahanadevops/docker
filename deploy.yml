@@ -14,7 +14,7 @@ spec:
       spec:
        containers:
         - name: sathavahana
-          image: sathadocker/webserver
+          image: sathadocker/webserver:latest
           imagePullPolicy: Always
           ports:
           - containerPort: 80
