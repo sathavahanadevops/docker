@@ -1,0 +1,5 @@
+- hosts: all
+  become: true
+  tasks:
+     - name: start k8 cluster
+       shell: /home/ubuntu/./k8.sh
