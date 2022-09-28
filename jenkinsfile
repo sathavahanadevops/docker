@@ -1,0 +1,53 @@
+node{
+    
+    stage("Git Checkout"){
+        git branch: 'main', url: 'https://github.com/sathavahanadevops/docker.git'
+    }
+    stage("sending docker file to docker host"){
+        sshagent(['web']) {
+         sh 'ssh -o StrictHostKeyChecking=no root@75.101.227.207'
+         sh 'scp /var/lib/jenkins/workspace/webserver/* root@75.101.227.207:/root'
+      }
+    }
+    stage("docker build"){
+        sshagent(['web']) {
+         sh 'ssh -o StrictHostKeyChecking=no root@75.101.227.207 ls -al'
+         sh 'ssh -o StrictHostKeyChecking=no root@75.101.227.207 pwd'
+         sh 'ssh -o StrictHostKeyChecking=no root@75.101.227.207 docker image build -t $JOB_NAME:v1.$BUILD_ID .'
+       }
+    }
+    stage("docker image tag"){
+       sshagent(['web']){
+         sh 'ssh -o StrictHostKeyChecking=no root@75.101.227.207 docker image tag  $JOB_NAME:v1.$BUILD_ID sathadocker/$JOB_NAME:v1.$BUILD_ID '
+         sh 'ssh -o StrictHostKeyChecking=no root@75.101.227.207 docker image tag  $JOB_NAME:v1.$BUILD_ID sathadocker/$JOB_NAME:latest '
+       }
+    }
+    stage("push docker images to docker hub"){
+        sshagent(['web']){
+                sh 'ssh -o StrictHostKeyChecking=no root@75.101.227.207 docker login -u sathadocker -p Kalava1@.'
+                sh 'ssh -o StrictHostKeyChecking=no root@75.101.227.207 docker image push sathadocker/$JOB_NAME:v1.$BUILD_ID '
+                sh 'ssh -o StrictHostKeyChecking=no root@75.101.227.207 docker image push sathadocker/$JOB_NAME:latest '
+                sh 'ssh -o StrictHostKeyChecking=no root@75.101.227.207 docker image rm sathadocker/$JOB_NAME:v1.$BUILD_ID sathadocker/$JOB_NAME:latest $JOB_NAME:v1.$BUILD_ID'
+            
+        }
+    }
+    stage("sending  playbook to ansible"){
+        sshagent(['ansible']) {
+         sh 'ssh -o StrictHostKeyChecking=no root@54.196.176.244'
+         sh 'scp /var/lib/jenkins/workspace/webserver/* root@54.196.176.244:/etc/ansible/'
+      }
+    }
+    stage("sending deploy and service file to k8"){
+        sshagent(['k8']) {
+         sh 'ssh -o StrictHostKeyChecking=no root@54.208.9.247'
+         sh 'scp /var/lib/jenkins/workspace/webserver/* root@54.208.9.247:/home/ubuntu/'
+        }
+    }
+    stage("deploy k8 using ansible"){
+        sshagent(['ansible']) {
+            sh 'ssh -o StrictHostKeyChecking=no root@54.196.176.244 ls -al'
+            sh 'ssh -o StrictHostKeyChecking=no root@54.196.176.244 ansible-playbook -i hosts ansibledeploy.yml -vv'
+
+        }
+    }
+  }
